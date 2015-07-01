@@ -31,9 +31,9 @@ func main() {
 	go write_server(*conn, *bufin, c)
 	go read_server(*conn, *bufout, ch)
 	<-c
-	fmt.Println("writeserver bukatu da")
+	//write_server ended
 	<-ch
-	fmt.Println("readserver bukatu da")
+	//read_server ended
 
 }
 
@@ -71,9 +71,9 @@ func read_server(conn net.TCPConn, bufout bufio.Reader, c chan struct{}) {
 		if err != nil {
 			fmt.Print("4")
 			fmt.Println(err)
+			break
 		}
 		if m == "[IXAdaemon]EOD\n" {
-			fmt.Println("Clienteak [IXAdaemon]EOD jaso du")
 			break
 		}
 		fmt.Println(m)
