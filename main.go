@@ -27,9 +27,10 @@ func main() {
 	interceptSignals(conn)
 	bufin := bufio.NewWriter(conn)
 	bufout := bufio.NewReader(conn)
+	sc := bufio.NewScanner(conn)
 
 	go write_server(*conn, *bufin, c)
-	go read_server(*conn, *bufout, ch)
+	go read_server(*sc, *bufout, ch)
 	<-c
 	//write_server ended
 	<-ch
@@ -64,19 +65,16 @@ func write_server(conn net.TCPConn, bufin bufio.Writer, c chan struct{}) {
 	return
 }
 
-func read_server(conn net.TCPConn, bufout bufio.Reader, c chan struct{}) {
-	for {
-		//time.Sleep(time.Second)
-		m, err := bufout.ReadString('\n')
-		if err != nil {
-			fmt.Print("4")
-			fmt.Println(err)
+func read_server(scanner bufio.Scanner, bufout bufio.Reader, c chan struct{}) {
+	//canner := bufio.NewScanner(conn)
+	scanner.Split(bufio.ScanLines)
+	for scanner.Scan() {
+		str := scanner.Text()
+		if str == "[IXAdaemon]EOD" {
 			break
 		}
-		if m == "[IXAdaemon]EOD\n" {
-			break
-		}
-		fmt.Println(m)
+		//bufio.NewWriter(os.Stdout).WriteString(str)
+		fmt.Println(str)
 	}
 	c <- struct{}{}
 	return
