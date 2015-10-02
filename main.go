@@ -12,11 +12,16 @@ import (
 func main() {
 
 	var port string
+
+	//Create channels for sincronizing with go rutines
 	c := make(chan struct{})
 	ch := make(chan struct{})
+
+	//Parse Port number, for communicating with IXAdaemon_server
 	flag.StringVar(&port, "port", "2101", "mainPort of server")
 	flag.Parse()
 
+	//Connect with IXAdaemon_server
 	mainService := ":" + port
 	tcpAddr1, err := net.ResolveTCPAddr("tcp", mainService)
 	conn, err := net.DialTCP("tcp", nil, tcpAddr1)
@@ -24,17 +29,21 @@ func main() {
 		fmt.Println("Can't connect to server")
 		os.Exit(1)
 	}
-	interceptSignals(conn)
+
+	//Create Writers and Readers for communication
 	bufin := bufio.NewWriter(conn)
 	bufout := bufio.NewReader(conn)
 	sc := bufio.NewScanner(conn)
 
+	interceptSignals(conn)
+
+	//Launch routines
 	go write_server(*conn, *bufin, c)
 	go read_server(*sc, *bufout, ch)
-	<-c
 	//write_server ended
-	<-ch
+	<-c
 	//read_server ended
+	<-ch
 
 }
 
